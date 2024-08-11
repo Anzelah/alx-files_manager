@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+
 const sha1 = require('sha1');
 
 const host = process.env.DB_HOST || 'localhost';
@@ -28,32 +29,32 @@ class DBClient {
   isAlive() {
     return Boolean(this.db);
   }
-  
+
   async findUserbyEmail(email) {
     try {
-      const user = await this.usersCol.findOne({ email: email })
-      return user
+      const user = await this.usersCol.findOne({ email });
+      return user;
     } catch (err) {
-      console.error('Error finding user by email:', err.message)
-      return null
+      console.error('Error finding user by email:', err.message);
+      return null;
     }
   }
 
   async createUser(email, password) {
-    try{
-      const existingUser = await this.findUserbyEmail(email)
+    try {
+      const existingUser = await this.findUserbyEmail(email);
       if (existingUser) {
-        return null
+        return null;
       }
-      const hashedPw = hashPassword(password)
+      const hashedPw = hashPassword(password);
       const user = await this.usersCol.insertOne({
-	      email : email,
-              password: hashedPw
-              })
-      return user.ops[0]
+	      email,
+        password: hashedPw,
+      });
+      return user.ops[0];
     } catch (err) {
-      console.error('Error creating user:', err.message)
-      return null
+      console.error('Error creating user:', err.message);
+      return null;
     }
   }
 
