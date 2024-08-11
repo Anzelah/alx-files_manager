@@ -1,9 +1,15 @@
 import { MongoClient } from 'mongodb';
+const sha1 = require('sha1');
 
 const host = process.env.DB_HOST || 'localhost';
 const port = process.env.DB_PORT || 27017;
 const database = process.env.DB_DATABASE || 'files_manager';
 const url = `mongodb://${host}:${port}/`;
+
+function hashPassword(password) {
+  const hashed = sha1(password);
+  return hashed;
+}
 
 class DBClient {
   constructor() {
@@ -21,6 +27,34 @@ class DBClient {
 
   isAlive() {
     return Boolean(this.db);
+  }
+  
+  async findUserbyEmail(email) {
+    try {
+      const user = await this.usersCol.findOne({ email: email })
+      return user
+    } catch (err) {
+      console.error('Error finding user by email:', err.message)
+      return null
+    }
+  }
+
+  async createUser(email, password) {
+    try{
+      const existingUser = await this.findUserbyEmail(email)
+      if (existingUser) {
+        return null
+      }
+      const hashedPw = hashPassword(password)
+      const user = await this.usersCol.insertOne({
+	      email : email,
+              password: hashedPw
+              })
+      return user.ops[0]
+    } catch (err) {
+      console.error('Error creating user:', err.message)
+      return null
+    }
   }
 
   async nbUsers() {
