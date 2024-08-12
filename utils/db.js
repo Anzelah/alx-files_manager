@@ -48,7 +48,7 @@ class DBClient {
       }
       const hashedPw = hashPassword(password);
       const user = await this.usersCol.insertOne({
-	      email,
+        email,
         password: hashedPw,
       });
       return user.ops[0];

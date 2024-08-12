@@ -1,6 +1,6 @@
 import dbClient from '../utils/db';
 
-export const postNew = async (req, res) => {
+const postNew = async (req, res) => {
   const { email, password } = req.body;
   if (!email) {
     return res.status(400).json({ error: 'Missing email' });
@@ -17,3 +17,5 @@ export const postNew = async (req, res) => {
 
   return res.status(201).json({ id: newUser._id, email: newUser.email });
 };
+
+export default postNew;
