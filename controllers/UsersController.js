@@ -19,14 +19,13 @@ export const postNew = async (req, res) => {
   return res.status(201).json({ id: newUser._id, email: newUser.email });
 };
 
-
-export const getMe = async(req, res) => {
-  const token = req.headers['x-token']
-  const key = `auth_${token}`
-  const userId = await redisClient.get(key)
-  const user = await dbClient.findUserbyId(userId)
+export const getMe = async (req, res) => {
+  const token = req.headers['x-token'];
+  const key = `auth_${token}`;
+  const userId = await redisClient.get(key);
+  const user = await dbClient.findUserbyId(userId);
   if (!user) {
-    return res.status(401).json({ error: 'Unauthorized' })
+    return res.status(401).json({ error: 'Unauthorized' });
   }
-  return res.json({ id: user._id, email: user.email })
-}
+  return res.json({ id: user._id, email: user.email });
+};
