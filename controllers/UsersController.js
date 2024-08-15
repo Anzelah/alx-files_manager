@@ -17,3 +17,13 @@ export const postNew = async (req, res) => {
 
   return res.status(201).json({ id: newUser._id, email: newUser.email });
 };
+
+
+export const getMe = async(req, res) => {
+  const token = req.headers['x-token']
+  const user = await dbClient.findUserbyToken(token)
+  if (!user) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+  return res.json({ id: user._id, email: user.email })
+}

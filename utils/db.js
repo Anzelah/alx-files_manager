@@ -58,6 +58,16 @@ class DBClient {
     }
   }
 
+  async findUserbyToken(token) {
+    try {
+      const user = await this.usersCol.findOne({ token });
+      return user;
+    } catch (err) {
+      console.error('Error finding user by token:', err.message);
+      return null;
+    }
+  }
+
   async nbUsers() {
     return this.usersCol.countDocuments();
   }
