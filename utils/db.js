@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 const sha1 = require('sha1');
 
@@ -60,7 +60,7 @@ class DBClient {
 
   async findUserbyId(id) {
     try {
-      const user = await this.usersCol.findOne({ id });
+      const user = await this.usersCol.findOne({ _id: new ObjectId(id) });
       return user;
     } catch (err) {
       console.error('Error finding user by token:', err.message);
