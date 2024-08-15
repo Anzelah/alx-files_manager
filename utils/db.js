@@ -58,9 +58,9 @@ class DBClient {
     }
   }
 
-  async findUserbyToken(token) {
+  async findUserbyId(id) {
     try {
-      const user = await this.usersCol.findOne({ token });
+      const user = await this.usersCol.findOne({ id });
       return user;
     } catch (err) {
       console.error('Error finding user by token:', err.message);

@@ -1,4 +1,5 @@
 import dbClient from '../utils/db';
+import redisClient from '../utils/redis';
 
 export const postNew = async (req, res) => {
   const { email, password } = req.body;
@@ -21,7 +22,9 @@ export const postNew = async (req, res) => {
 
 export const getMe = async(req, res) => {
   const token = req.headers['x-token']
-  const user = await dbClient.findUserbyToken(token)
+  const key = `auth_${token}`
+  const userId = await redisClient.get(key)
+  const user = await dbClient.findUserbyId(userId)
   if (!user) {
     return res.status(401).json({ error: 'Unauthorized' })
   }

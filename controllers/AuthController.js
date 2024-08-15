@@ -23,14 +23,15 @@ export const getConnect = async(req, res) => {
   console.log(user)
   const token = generateToken()
   const key = `auth_${token}`
-  await redisClient.set(key, 86400, token)
-  const results = await redisClient.get(key)
-  return res.status(200).json({ token: results })
+  await redisClient.set(key, 86400, user._id)
+  return res.status(200).json({ token: token })
 }
 
 export const getDisconnect = async(req, res) => {
   const token = req.headers['x-token']
-  const user = await dbClient.findUserbyToken(token)
+  const key = `auth_${token}`
+  const userId = await redisClient.get(key)
+  const user = await dbClient.findUserbyId(userId)
   if (!user) {
     return res.status(401).json({ error: "Unauthorized" })
   }
