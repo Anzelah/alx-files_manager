@@ -1,9 +1,9 @@
+import base64 from 'base-64';
+import utf8 from 'utf8';
+import { v4 as uuid } from 'uuidv4';
+
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
-
-const base64 = require('base-64');
-const utf8 = require('utf8');
-const { uuid } = require('uuidv4');
 
 function generateToken() {
   return uuid();
