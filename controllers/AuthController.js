@@ -11,20 +11,24 @@ function generateToken() {
 
 class AuthController {
   static async getConnect(req, res) {
-    const authString = req.headers.authorization;
-    const encoded = authString.split(' ')[1];
-    const bytes = base64.decode(encoded);
-    const decodedStr = utf8.decode(bytes);
-    const email = decodedStr.split(':')[0];
+    try {
+      const authString = req.headers.authorization;
+      const encoded = authString.split(' ')[1];
+      const bytes = base64.decode(encoded);
+      const decodedStr = utf8.decode(bytes);
+      const email = decodedStr.split(':')[0];
 
-    const user = await dbClient.findUserbyEmail(email);
-    if (!user) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      const user = await dbClient.findUserbyEmail(email);
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      const token = generateToken();
+      const key = `auth_${token}`;
+      await redisClient.set(key, 86400, user._id);
+      return res.status(200).json({ token });
+    } catch(err) {
+      console.error(`Internal server error: ${err.message}`)
     }
-    const token = generateToken();
-    const key = `auth_${token}`;
-    await redisClient.set(key, 86400, user._id);
-    return res.status(200).json({ token });
   }
 
   static async getDisconnect(req, res) {
