@@ -21,6 +21,9 @@ export const postNew = async (req, res) => {
 
 export const getMe = async (req, res) => {
   const token = req.headers['x-token'];
+  if (!token) {
+    return res.status(400).json({ error: 'Missing token' });
+  }
   const key = `auth_${token}`;
   const userId = await redisClient.get(key);
   const user = await dbClient.findUserbyId(userId);
