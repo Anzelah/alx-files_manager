@@ -1,6 +1,6 @@
 import base64 from 'base-64';
 import utf8 from 'utf8';
-import { v4 as uuid } from 'uuidv4';
+import { uuid } from 'uuidv4';
 
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
@@ -24,7 +24,7 @@ class AuthController {
       }
       const token = generateToken();
       const key = `auth_${token}`;
-      await redisClient.set(key, 86400, user._id);
+      await redisClient.set(key, 86400, user._id.toString());
       return res.status(200).json({ token });
     } catch(err) {
       console.error(`Internal server error: ${err.message}`)
