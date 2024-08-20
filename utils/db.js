@@ -78,7 +78,7 @@ class DBClient {
     }
   }
 
-  async createFile(name, type, parentId, isPublic, data, userId) {
+  async createFile(name, type, parentId, isPublic, data, userId, localPath) {
     try {
       const existingFile = await this.findFilebyId(parentId);
       console.log(`Is file existing? ${existingFile}`)
@@ -88,14 +88,22 @@ class DBClient {
           { $set: { userId: new ObjectId(userId) } },
         )
       }
-      const file = await this.filesCol.insertOne({
+
+      const fileData = {
         name,
         userId: new ObjectId(userId),
         type,
         parentId: new ObjectId(parentId),
         isPublic,
-        data,
-      });
+      };
+      if (type === 'file' || type === 'image') {
+        fileData.localPath = localPath
+      }
+      if (type === 'folder') {
+        fileData.data = data
+      }
+
+      const file = await this.filesCol.insertOne(fileData)
       console.log(`This is the file from db: ${file}`)
       return file.ops[0];
     } catch (err) {

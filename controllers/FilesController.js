@@ -1,5 +1,8 @@
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
+import { uuid } from 'uuidv4';
+const fs = require('node:fs');
+import base64 from 'base-64'
 
 class FilesController {
   static async postUpload(req, res) {
@@ -44,13 +47,25 @@ class FilesController {
         return res.status(400).json({ error: 'Parent is not a folder' });
       }
     }
-    if (type === 'folder') {
-      const newFile = await dbClient.createFile(name, type, parentId, isPublic, data, userId);
-      return res.status(201).json(newFile);
-    }
 
     // otherwise
-    const folder = 
+    const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager'
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath)
+    }
+    const filename = uuid()
+    const localPath = path.join(folderPath, filename)
+    console.log{`This is localpath: ${localPath}`)
+    const content = base64.decode(data)
+    console.log(`This is the content: ${content}`)
+    try {
+      fs.writeFileSync(localPath, content)
+    } catch(err) {
+      console.error('Error storing the file:', err.message)
+    }
+    
+    const newFile = await dbClient.createFile(name, type, parentId, isPublic, data, userId, localPath);
+    return res.status(201).json(newFile);
   }
 }
 
