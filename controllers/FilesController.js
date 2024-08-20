@@ -1,8 +1,9 @@
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 import { uuid } from 'uuidv4';
-const fs = require('node:fs');
-import base64 from 'base-64'
+const { Buffer } = require('buffer');
+const fs = require('fs');
+const path = require('path');
 
 class FilesController {
   static async postUpload(req, res) {
@@ -55,8 +56,8 @@ class FilesController {
     }
     const filename = uuid()
     const localPath = path.join(folderPath, filename)
-    console.log{`This is localpath: ${localPath}`)
-    const content = base64.decode(data)
+    console.log(`This is localpath: ${localPath}`)
+    const content = Buffer.from(data, 'base64').toString('utf-8')
     console.log(`This is the content: ${content}`)
     try {
       fs.writeFileSync(localPath, content)
@@ -65,7 +66,14 @@ class FilesController {
     }
     
     const newFile = await dbClient.createFile(name, type, parentId, isPublic, data, userId, localPath);
-    return res.status(201).json(newFile);
+    return res.status(201).json({
+      id: newFile._id,
+      userId,
+      name,
+      type,
+      isPublic,
+      parentId
+    });
   }
 }
 

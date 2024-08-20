@@ -93,7 +93,7 @@ class DBClient {
         name,
         userId: new ObjectId(userId),
         type,
-        parentId: new ObjectId(parentId),
+        parentId: new ObjectId(parentId) || 0, 
         isPublic,
       };
       if (type === 'file' || type === 'image') {
