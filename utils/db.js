@@ -93,14 +93,11 @@ class DBClient {
         name,
         userId: new ObjectId(userId),
         type,
-        parentId: new ObjectId(parentId) || 0, 
+        parentId: parentId ? new ObjectId(parentId) : 0, 
         isPublic,
       };
       if (type === 'file' || type === 'image') {
         fileData.localPath = localPath
-      }
-      if (type === 'folder') {
-        fileData.data = data
       }
 
       const file = await this.filesCol.insertOne(fileData)
