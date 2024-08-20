@@ -1,4 +1,5 @@
 import { MongoClient, ObjectId } from 'mongodb';
+import redisClient from './redis;
 
 const sha1 = require('sha1');
 
@@ -65,6 +66,38 @@ class DBClient {
     } catch (err) {
       console.error('Error finding user by token:', err.message);
       return null;
+    }
+  }
+
+  async findFilebyparentId(parentId) {
+    try {
+      const file = await this.filesCol.findOne({ parentId: new ObjectId(parentId) })
+      return file;
+    } catch (err) {
+      console.error('Error retrieving file by parentId:', err.message);
+      return null;
+    }
+  }
+
+  async createFile(name, type, parentId, isPublic, data, token) {
+    const userId = await redisClient.get(`auth_${token}`)
+    try {
+      const existingFile = await this.findFilebyparentId(parentId)
+      if (existingFile) {
+        await this.filesCol.updateOne( {_id: existingFile._id}, { $set: { userId: new ObjectId(userId) }})
+	return null;
+      }
+      const file = await this.filesCol.insertOne({
+        name,
+	userId: new ObjectId(userId),
+        type,
+        parentId: new ObjectId(parentId),
+        isPublic,
+        data
+      })
+      return file.ops[0]
+    } catch(err) {
+      console.error('Error retrieving file:', err.message)
     }
   }
 
