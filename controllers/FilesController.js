@@ -15,10 +15,10 @@ class FilesController {
     }
 
     let data;
-    const { name, type } = req.body;
-    const parentId = req.body.parentId || 0;
-    const isPublic = req.body.isPublic || false;
-    if (type == 'file' || type == 'image') {
+    const {
+      name, type, parentId = 0, isPublic = false,
+    } = req.body;
+    if (type === 'file' || type === 'image') {
       data = req.body.data;
     }
 
@@ -29,23 +29,28 @@ class FilesController {
     if (!type || !typesArr.includes(type)) {
       return res.status(400).json({ error: 'Missing type' });
     }
-    if (!data && type != 'folder') {
+    if (!data && type !== 'folder') {
       return res.status(400).json({ error: 'Missing data' });
     }
-
+    
+    console.log(`This is data from controller: ${data}`)
     if (parentId) {
-      const file = await findFilebyparentId(parentId);
+      const file = await dbClient.findFilebyId(parentId);
+      console.log(`This is the file: ${file}`)
       if (!file) {
         return res.status(400).json({ error: 'Parent not found' });
       }
-      if (file.type != 'folder') {
+      if (file.type !== 'folder') {
         return res.status(400).json({ error: 'Parent is not a folder' });
       }
-      if (file.type == 'folder') {
-        const newFile = await createFile(name, type, parentId, isPublic, data);
-        return res.status(201).send(newFile)
-      }
     }
+    if (type === 'folder') {
+      const newFile = await dbClient.createFile(name, type, parentId, isPublic, data, userId);
+      return res.status(201).json(newFile);
+    }
+
+   // otherwise//
+
   }
 }
 

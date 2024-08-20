@@ -1,5 +1,4 @@
 import { MongoClient, ObjectId } from 'mongodb';
-import redisClient from './redis;
 
 const sha1 = require('sha1');
 
@@ -69,9 +68,9 @@ class DBClient {
     }
   }
 
-  async findFilebyparentId(parentId) {
+  async findFilebyId(parentId) {
     try {
-      const file = await this.filesCol.findOne({ parentId: new ObjectId(parentId) })
+      const file = await this.filesCol.findOne({ parentId: new ObjectId(parentId) });
       return file;
     } catch (err) {
       console.error('Error retrieving file by parentId:', err.message);
@@ -79,25 +78,29 @@ class DBClient {
     }
   }
 
-  async createFile(name, type, parentId, isPublic, data, token) {
-    const userId = await redisClient.get(`auth_${token}`)
+  async createFile(name, type, parentId, isPublic, data, userId) {
     try {
-      const existingFile = await this.findFilebyparentId(parentId)
+      const existingFile = await this.findFilebyId(parentId);
+      console.log(`Is file existing? ${existingFile}`)
       if (existingFile) {
-        await this.filesCol.updateOne( {_id: existingFile._id}, { $set: { userId: new ObjectId(userId) }})
-	return null;
+        await this.filesCol.updateOne(
+          { _id: existingFile._id },
+          { $set: { userId: new ObjectId(userId) } },
+        )
       }
       const file = await this.filesCol.insertOne({
         name,
-	userId: new ObjectId(userId),
+        userId: new ObjectId(userId),
         type,
         parentId: new ObjectId(parentId),
         isPublic,
-        data
-      })
-      return file.ops[0]
-    } catch(err) {
-      console.error('Error retrieving file:', err.message)
+        data,
+      });
+      console.log(`This is the file from db: ${file}`)
+      return file.ops[0];
+    } catch (err) {
+      console.error('Error retrieving file:', err.message);
+      return null;
     }
   }
 
