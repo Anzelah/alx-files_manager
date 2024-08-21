@@ -19,7 +19,10 @@ class FilesController {
     }
 
     let data;
-    const { name, type, parentId = 0, isPublic = false, data } = req.body;
+    const { name, type, parentId = 0, isPublic = false } = req.body;
+    if (type === 'file' || type === 'image') {
+      data = req.body.data
+    }
 
     if (!name) {
       return res.status(400).json({ error: 'Missing name' });
@@ -31,10 +34,9 @@ class FilesController {
     if (!data && type !== 'folder') {
       return res.status(400).json({ error: 'Missing data' });
     }
-    
+
     if (parentId) {
       const file = await dbClient.findFilebyId(parentId);
-      console.log(`This is the file: ${file}`)
       if (!file) {
         return res.status(400).json({ error: 'Parent not found' });
       }
@@ -43,21 +45,20 @@ class FilesController {
       }
     }
     
-    console.log(`This is the data(controller): ${data}`)
-    // otherwise
-    const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager'
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath)
-    }
-    const filename = uuid()
-    const localPath = path.join(folderPath, filename)
-    console.log(`This is localpath: ${localPath}`)
-    const content = Buffer.from(data, 'base64')
-    console.log(`This is the content: ${content}`)
-    try {
-      fs.writeFileSync(localPath, content)
-    } catch(err) {
-      console.error('Error storing the file:', err.message)
+    let localPath
+    if (type !== 'folder') {
+      const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager'
+      if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath)
+      }
+      const filename = uuid()
+      localPath = path.join(folderPath, filename)
+      const content = Buffer.from(data, 'base64')
+      try {
+        fs.writeFileSync(localPath, content)
+      } catch(err) {
+        console.error('Error storing the file:', err.message)
+      }
     }
     
     const newFile = await dbClient.createFile(name, type, parentId, isPublic, data, userId, localPath);
