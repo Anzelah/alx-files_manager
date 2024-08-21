@@ -97,7 +97,6 @@ class DBClient {
       };
       if (type === 'file' || type === 'image') {
         fileData.localPath = localPath
-	fileData.data = data
       }
 
       const file = await this.filesCol.insertOne(fileData)

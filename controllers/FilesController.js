@@ -64,11 +64,11 @@ class FilesController {
     const newFile = await dbClient.createFile(name, type, parentId, isPublic, data, userId, localPath);
     return res.status(201).json({
       id: newFile._id,
-      userId,
-      name,
-      type,
-      isPublic,
-      parentId
+      userId: newFile.userId,
+      name: newFile.name,
+      type: newFile.type,
+      isPublic: newFile.isPublic,
+      parentId: newFile.parentId
     });
   }
 }
