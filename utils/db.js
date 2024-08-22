@@ -70,7 +70,7 @@ class DBClient {
 
   async findFilebyId(parentId) {
     try {
-      const file = await this.filesCol.findOne({ _id: new ObjectId(parentId) })
+      const file = await this.filesCol.findOne({ _id: new ObjectId(parentId) });
       return file;
     } catch (err) {
       console.error('Error retrieving file by parentId:', err.message);
@@ -85,21 +85,21 @@ class DBClient {
         await this.filesCol.updateOne(
           { _id: existingFile._id },
           { $set: { userId: new ObjectId(userId) } },
-        )
+        );
       }
 
       const fileData = {
         name,
         userId: new ObjectId(userId),
         type,
-        parentId: parentId ? new ObjectId(parentId) : 0, 
-        isPublic
+        parentId: parentId ? new ObjectId(parentId) : 0,
+        isPublic,
       };
       if (type === 'file' || type === 'image') {
-        fileData.localPath = localPath
+        fileData.localPath = localPath;
       }
 
-      const file = await this.filesCol.insertOne(fileData)
+      const file = await this.filesCol.insertOne(fileData);
       return file.ops[0];
     } catch (err) {
       console.error('Error retrieving file:', err.message);

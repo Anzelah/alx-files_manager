@@ -1,6 +1,8 @@
+import { uuid } from 'uuidv4';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
-import { uuid } from 'uuidv4';
+import { authUser } from '../utils/auth'
+
 const { Buffer } = require('buffer');
 const fs = require('fs');
 const path = require('path');
@@ -19,9 +21,11 @@ class FilesController {
     }
 
     let data;
-    const { name, type, parentId = 0, isPublic = false } = req.body;
+    const {
+      name, type, parentId = 0, isPublic = false,
+    } = req.body;
     if (type === 'file' || type === 'image') {
-      data = req.body.data
+      data = req.body.data;
     }
 
     if (!name) {
@@ -44,23 +48,23 @@ class FilesController {
         return res.status(400).json({ error: 'Parent is not a folder' });
       }
     }
-    
-    let localPath
+
+    let localPath;
     if (type !== 'folder') {
-      const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager'
+      const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
       if (!fs.existsSync(folderPath)) {
-        fs.mkdirSync(folderPath)
+        fs.mkdirSync(folderPath);
       }
-      const filename = uuid()
-      localPath = path.join(folderPath, filename)
-      const content = Buffer.from(data, 'base64')
+      const filename = uuid();
+      localPath = path.join(folderPath, filename);
+      const content = Buffer.from(data, 'base64').toString('utf8');
       try {
-        fs.writeFileSync(localPath, content)
-      } catch(err) {
-        console.error('Error storing the file:', err.message)
+        fs.writeFileSync(localPath, content);
+      } catch (err) {
+        console.error('Error storing the file:', err.message);
       }
     }
-    
+
     const newFile = await dbClient.createFile(name, type, parentId, isPublic, data, userId, localPath);
     return res.status(201).json({
       id: newFile._id,
@@ -68,8 +72,25 @@ class FilesController {
       name: newFile.name,
       type: newFile.type,
       isPublic: newFile.isPublic,
-      parentId: newFile.parentId
+      parentId: newFile.parentId,
     });
+  }
+  
+  static async getShow(req, res) {
+    const user = await authUser(req, res);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    const id = req.params.id
+    const file = await dbClient.findFilebyId(id)
+    if (!file) {
+      return res.status(404).json({ error: 'Not found' })
+    }
+    return file
+  }
+
+  static async getIndex(req, res) {
   }
 }
 
