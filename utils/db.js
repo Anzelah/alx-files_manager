@@ -114,6 +114,18 @@ class DBClient {
   async nbFiles() {
     return this.filesCol.countDocuments();
   }
+
+  async paginateFiles(user, parentId, page) {
+    const files = await this.filesCol.aggregate([
+      { $match : {
+          userId: user._id,
+          parentId: parentId
+        }
+      },
+      { $skip: (page) * 20 },
+      { $limit: 20 }
+    ])
+    console.log(typeof(files))
 }
 
 const dbClient = new DBClient();
