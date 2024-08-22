@@ -91,7 +91,18 @@ class FilesController {
   }
 
   static async getIndex(req, res) {
-  }
+    const user = await authUser(req, res)
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+   
+    const parentId = req.query.parentId || 0
+    const files = await dbClient.findUserbyId(parentId)
+    if (!files) {
+      return res.status(200).json([])
+    }
+    const page = req.query.page
+  } 
 }
 
 export default FilesController;
