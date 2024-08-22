@@ -84,10 +84,10 @@ class FilesController {
     
     const id = req.params.id
     const file = await dbClient.findFilebyId(id)
-    if (!file) {
+    if (!file || file.userid !== user._id) {
       return res.status(404).json({ error: 'Not found' })
     }
-    return file
+    return res.status(200).json(file)
   }
 
   static async getIndex(req, res) {
