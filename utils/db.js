@@ -61,7 +61,7 @@ class DBClient {
   async findUserbyId(id) {
     try {
       const user = await this.usersCol.findOne({ _id: new ObjectId(id) });
-      return user;
+      return user
     } catch (err) {
       console.error('Error finding user by token:', err.message);
       return null;
@@ -77,7 +77,16 @@ class DBClient {
       return null;
     }
   }
-
+  
+  async findSpecificFile(id, user) {
+    try {
+      const file = await this.filesCol.findOne({ _id: new ObjectId(id), userId: new ObjectId(user._id) });
+      return file;
+    } catch (err) {
+      console.error('Error retrieving file by id and user:', err.message);
+      return null;
+    }
+  }
   async createFile(name, type, parentId, isPublic, data, userId, localPath) {
     try {
       const existingFile = await this.findFilebyId(parentId);
@@ -114,18 +123,25 @@ class DBClient {
   async nbFiles() {
     return this.filesCol.countDocuments();
   }
-
+ 
+  async findFilesforUser(id) {
+    try {
+      const cursor = await this.filesCol.find({ userId: new ObjectId(id) });
+      const files = await cursor.toArray()
+      return files;
+    } catch (err) {
+      console.error('Error retrieving file by parentId:', err.message);
+      return null;
+    }
+  }
   async paginateFiles(user, parentId, page) {
     const files = await this.filesCol.aggregate([
-      { $match : {
-          userId: user._id,
-          parentId: parentId
-        }
-      },
+      { $match : { userId: new ObjectId(user._id) } },
       { $skip: (page) * 20 },
       { $limit: 20 }
-    ])
-    console.log(typeof(files))
+    ]).toArray()
+    return files
+  }
 }
 
 const dbClient = new DBClient();
