@@ -6,6 +6,7 @@ const host = process.env.DB_HOST || 'localhost';
 const port = process.env.DB_PORT || 27017;
 const database = process.env.DB_DATABASE || 'files_manager';
 const url = `mongodb://${host}:${port}/`;
+const ROOT_ID = 0
 
 function hashPassword(password) {
   const hashed = sha1(password);
@@ -124,21 +125,22 @@ class DBClient {
     return this.filesCol.countDocuments();
   }
  
-  async findFilesforUser(id) {
-    try {
-      const cursor = await this.filesCol.find({ userId: new ObjectId(id) });
-      const files = await cursor.toArray()
-      return files;
-    } catch (err) {
-      console.error('Error retrieving file by parentId:', err.message);
-      return null;
-    }
-  }
   async paginateFiles(user, parentId, page) {
+    let query
+    if (parentId === 0) {
+      query = { userId: user._id }
+    } else {
+      query = { userId: user._id, parentId: new ObjectId(parentId) }
+    }
     const files = await this.filesCol.aggregate([
-      { $match : { userId: new ObjectId(user._id) } },
-      { $skip: (page) * 20 },
-      { $limit: 20 }
+      { $match : query },
+      { $skip: page * 20 },
+      { $limit: 20 },
+      {
+        $project: {
+	  id: '$_id', _id: 0, name: 1, type: 1, isPublic: 1, parentId: 1, userId: 1
+	}
+      }
     ]).toArray()
     return files
   }
