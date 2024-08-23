@@ -84,7 +84,6 @@ class FilesController {
     
     const id = req.params.id
     const file = await dbClient.findSpecificFile(id, user)
-    console.log(id)
     if (!file) {
       return res.status(404).json({ error: 'Not found' })
     }
@@ -92,16 +91,21 @@ class FilesController {
   }
 
   static async getIndex(req, res) {
-    const user = await authUser(req, res)
-    if (!user) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    try {
+      const user = await authUser(req, res)
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
     
-    const parentId = (req.query.parentId) || 0
-    const page = parseInt(req.query.page, 10) || 0
-    const paginatedFiles = await dbClient.paginateFiles(user, parentId, page)
-    return res.status(200).json(paginatedFiles);
-  } 
+      const parentId = (req.query.parentId) || 0
+      const page = parseInt(req.query.page, 10) || 0
+      const paginatedFiles = await dbClient.paginateFiles(user, parentId, page)
+      return res.status(200).json(paginatedFiles);
+    } catch (err) {
+      console.error('Error retrieving files', err.message)
+      return res.status(200).json([])
+    }
+  }
 }
 
 export default FilesController;
