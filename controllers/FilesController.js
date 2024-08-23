@@ -1,7 +1,7 @@
 import { uuid } from 'uuidv4';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
-import { authUser } from '../utils/auth'
+import authUser from '../utils/auth';
 
 const { Buffer } = require('buffer');
 const fs = require('fs');
@@ -75,35 +75,35 @@ class FilesController {
       parentId: newFile.parentId,
     });
   }
-  
+
   static async getShow(req, res) {
     const user = await authUser(req, res);
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    
-    const id = req.params.id
-    const file = await dbClient.findSpecificFile(id, user)
+
+    const { id } = req.params;
+    const file = await dbClient.findSpecificFile(id, user);
     if (!file) {
-      return res.status(404).json({ error: 'Not found' })
+      return res.status(404).json({ error: 'Not found' });
     }
-    return res.status(200).json({ files: file })
+    return res.status(200).json({ files: file });
   }
 
   static async getIndex(req, res) {
     try {
-      const user = await authUser(req, res)
+      const user = await authUser(req, res);
       if (!user) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
-    
-      const parentId = (req.query.parentId) || 0
-      const page = parseInt(req.query.page, 10) || 0
-      const paginatedFiles = await dbClient.paginateFiles(user, parentId, page)
+
+      const parentId = (req.query.parentId) || 0;
+      const page = parseInt(req.query.page, 10) || 0;
+      const paginatedFiles = await dbClient.paginateFiles(user, parentId, page);
       return res.status(200).json(paginatedFiles);
     } catch (err) {
-      console.error('Error retrieving files', err.message)
-      return res.status(200).json([])
+      console.error('Error retrieving files', err.message);
+      return res.status(200).json([]);
     }
   }
 }

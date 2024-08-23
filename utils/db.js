@@ -6,7 +6,6 @@ const host = process.env.DB_HOST || 'localhost';
 const port = process.env.DB_PORT || 27017;
 const database = process.env.DB_DATABASE || 'files_manager';
 const url = `mongodb://${host}:${port}/`;
-const ROOT_ID = 0
 
 function hashPassword(password) {
   const hashed = sha1(password);
@@ -62,7 +61,7 @@ class DBClient {
   async findUserbyId(id) {
     try {
       const user = await this.usersCol.findOne({ _id: new ObjectId(id) });
-      return user
+      return user;
     } catch (err) {
       console.error('Error finding user by token:', err.message);
       return null;
@@ -78,7 +77,7 @@ class DBClient {
       return null;
     }
   }
-  
+
   async findSpecificFile(id, user) {
     try {
       const file = await this.filesCol.findOne({ _id: new ObjectId(id), userId: new ObjectId(user._id) });
@@ -88,6 +87,7 @@ class DBClient {
       return null;
     }
   }
+
   async createFile(name, type, parentId, isPublic, data, userId, localPath) {
     try {
       const existingFile = await this.findFilebyId(parentId);
@@ -124,25 +124,25 @@ class DBClient {
   async nbFiles() {
     return this.filesCol.countDocuments();
   }
- 
+
   async paginateFiles(user, parentId, page) {
-    let query
+    let query;
     if (parentId === 0) {
-      query = { userId: user._id }
+      query = { userId: user._id };
     } else {
-      query = { userId: user._id, parentId: new ObjectId(parentId) }
+      query = { userId: user._id, parentId: new ObjectId(parentId) };
     }
     const files = await this.filesCol.aggregate([
-      { $match : query },
+      { $match: query },
       { $skip: page * 20 },
       { $limit: 20 },
       {
         $project: {
-	  id: '$_id', _id: 0, name: 1, type: 1, isPublic: 1, parentId: 1, userId: 1
-	}
-      }
-    ]).toArray()
-    return files
+          id: '$_id', _id: 0, name: 1, type: 1, isPublic: 1, parentId: 1, userId: 1,
+        },
+      },
+    ]).toArray();
+    return files;
   }
 }
 
