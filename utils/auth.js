@@ -1,7 +1,7 @@
 import redisClient from './redis'
 import dbClient from './db'
 
-async function authUser(req, res) {
+export default async function authUser(req, res) {
   try {
     const token = req.headers['x-token'];
     if (!token) {
@@ -17,4 +17,3 @@ async function authUser(req, res) {
   }
 }
 
-module.exports = { authUser }
