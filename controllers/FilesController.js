@@ -114,6 +114,8 @@ class FilesController {
     }
 
     const { id } = req.params
+    console.log(`This is id: ${id}`)
+    console.log(`This is the userId: ${user._id}`)
     const file = await findSpecificFile(id, user)
     if (!file) {
       return res.status(404).json({ error: 'Not found' })
