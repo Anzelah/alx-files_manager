@@ -87,7 +87,7 @@ class FilesController {
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
     }
-    return res.status(200).json({ files: file });
+    return res.status(200).json(file);
   }
 
   static async getIndex(req, res) {
@@ -106,6 +106,39 @@ class FilesController {
       return res.status(200).json([]);
     }
   }
+
+  static async putPublish(req, res) {
+    const user = await authUser(req, res)
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+
+    const { id } = req.params
+    const file = await findSpecificFile(id, user)
+    if (!file) {
+      return res.status(404).json({ error: 'Not found' })
+    }
+    console.log(typeof(file))
+    file['isPublic'] = 'true'
+    return res.status(200).json(file)
+  }
+
+  static async putUnpublish(req, res) {
+    const user = await authUser(req, res)
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+
+    const { id } = req.params
+    const file = await findSpecificFile(id, user)
+    if (!file) {
+      return res.status(404).json({ error: 'Not found' })
+    }
+
+    file['isPublic'] = 'false'
+    return res.status(200).json(file)
+  }
+
 }
 
 export default FilesController;
