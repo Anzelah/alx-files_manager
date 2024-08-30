@@ -19,7 +19,7 @@ class DBClient {
         this.db = client.db(database);
         this.usersCol = this.db.collection('users');
         this.filesCol = this.db.collection('files');
-	console.log('Successfully connected to MongoDB.');
+        console.log('Successfully connected to MongoDB.');
       } else {
         console.log(error.message);
         this.db = false;

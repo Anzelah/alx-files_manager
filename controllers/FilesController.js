@@ -108,35 +108,34 @@ class FilesController {
   }
 
   static async putPublish(req, res) {
-    const user = await authUser(req, res)
+    const user = await authUser(req, res);
     if (!user) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const { id } = req.params
-    const file = await dbClient.findSpecificFile(id, user)
+    const { id } = req.params;
+    const file = await dbClient.findSpecificFile(id, user);
     if (!file) {
-      return res.status(404).json({ error: 'Not found' })
+      return res.status(404).json({ error: 'Not found' });
     }
-    file['isPublic'] = 'true'
-    return res.status(200).json(file)
+    file.isPublic = 'true';
+    return res.status(200).json(file);
   }
 
   static async putUnpublish(req, res) {
-    const user = await authUser(req, res)
+    const user = await authUser(req, res);
     if (!user) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const { id } = req.params
-    const file = await dbClient.findSpecificFile(id, user)
+    const { id } = req.params;
+    const file = await dbClient.findSpecificFile(id, user);
     if (!file) {
-      return res.status(404).json({ error: 'Not found' })
+      return res.status(404).json({ error: 'Not found' });
     }
-    file['isPublic'] = 'false'
-    return res.status(200).json(file)
+    file.isPublic = 'false';
+    return res.status(200).json(file);
   }
-
 }
 
 export default FilesController;
