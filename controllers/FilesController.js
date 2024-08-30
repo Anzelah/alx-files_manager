@@ -117,7 +117,7 @@ class FilesController {
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
     }
-    file.isPublic = 'true';
+    await dbClient.updateFile(id, { isPublic: !!true })
     return res.status(200).json(file);
   }
 
@@ -131,7 +131,7 @@ class FilesController {
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
     }
-    file.isPublic = 'false';
+    await dbClient.updateFile(id, { isPublic: !!false })
     return res.status(200).json(file);
   }
 
@@ -141,19 +141,19 @@ class FilesController {
     if (!file) {
       return res.status(404).json({ error: 'Not found' })
     }
-
+    console.log(file.isPublic)
     const user = await authUser(req, res)
-    if (file.isPublic === 'false' && (!user || user._id !== file.userId)) {
+    if (file.isPublic === false) {
       return res.status(404).json({ error: 'Not found' })
-    }
-    if (file.type === 'folder') {
+    } else if (file.type === 'folder') {
       return res.status(400).json({ error: "A folder doesn't have content" })
-    }
-    if (!file['localPath']) {
+    } else if (!file['localPath']) {
       return res.status(404).json({ error: 'Not found' })
+    } else {
+      const mimeType = mime.contentType(file.name)
+      const content = fs.readFileSync(file.localPath, mime.charset(mimeType))
+      return res.set('Content-Type', mimeType).send(content)
     }
-    
-    console.log(mime.contentType(file.name))
   }
 }
 

@@ -104,7 +104,7 @@ class DBClient {
         userId: new ObjectId(userId),
         type,
         parentId: parentId ? new ObjectId(parentId) : 0,
-        isPublic,
+        isPublic: Boolean(isPublic),
       };
       if (type === 'file' || type === 'image') {
         fileData.localPath = localPath;
@@ -116,6 +116,17 @@ class DBClient {
       console.error('Error retrieving file:', err.message);
       return null;
     }
+  }
+
+  async updateFile(id, updateFields) {
+    if (file) {
+      await this.filesCol.updateOne(
+        { _id: id },
+        { $set: updateFields },
+      );
+    return file
+    }
+    return null
   }
 
   async nbUsers() {
