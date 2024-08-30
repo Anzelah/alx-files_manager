@@ -6,6 +6,7 @@ import authUser from '../utils/auth';
 const { Buffer } = require('buffer');
 const fs = require('fs');
 const path = require('path');
+const mime = require('mime-types')
 
 class FilesController {
   static async postUpload(req, res) {
@@ -81,7 +82,6 @@ class FilesController {
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-
     const { id } = req.params;
     const file = await dbClient.findSpecificFile(id, user);
     if (!file) {
@@ -141,8 +141,9 @@ class FilesController {
     if (!file) {
       return res.status(404).json({ error: 'Not found' })
     }
+
     const user = await authUser(req, res)
-    if (file.isPublic === false && !user || user._id !== file.userId) {
+    if (file.isPublic === 'false' && (!user || user._id !== file.userId)) {
       return res.status(404).json({ error: 'Not found' })
     }
     if (file.type === 'folder') {
@@ -151,6 +152,8 @@ class FilesController {
     if (!file['localPath']) {
       return res.status(404).json({ error: 'Not found' })
     }
+    
+    console.log(mime.contentType(file.name))
   }
 }
 
