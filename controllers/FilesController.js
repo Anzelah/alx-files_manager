@@ -114,13 +114,10 @@ class FilesController {
     }
 
     const { id } = req.params
-    console.log(`This is id: ${id}`)
-    console.log(`This is the userId: ${user._id}`)
-    const file = await findSpecificFile(id, user)
+    const file = await dbClient.findSpecificFile(id, user)
     if (!file) {
       return res.status(404).json({ error: 'Not found' })
     }
-    console.log(typeof(file))
     file['isPublic'] = 'true'
     return res.status(200).json(file)
   }
@@ -132,11 +129,10 @@ class FilesController {
     }
 
     const { id } = req.params
-    const file = await findSpecificFile(id, user)
+    const file = await dbClient.findSpecificFile(id, user)
     if (!file) {
       return res.status(404).json({ error: 'Not found' })
     }
-
     file['isPublic'] = 'false'
     return res.status(200).json(file)
   }
