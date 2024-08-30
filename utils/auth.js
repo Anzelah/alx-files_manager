@@ -12,7 +12,7 @@ export default async function authUser(req, res) {
     const user = await dbClient.findUserbyId(userId);
     return user
   } catch(err) {
-    console.err(`Error retrieving user by token: err.message`)
+    console.err('Error retrieving user by token:', err.message)
     return null
   }
 }

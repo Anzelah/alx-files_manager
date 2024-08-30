@@ -112,7 +112,6 @@ class FilesController {
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-
     const { id } = req.params;
     const file = await dbClient.findSpecificFile(id, user);
     if (!file) {
@@ -127,7 +126,6 @@ class FilesController {
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-
     const { id } = req.params;
     const file = await dbClient.findSpecificFile(id, user);
     if (!file) {
@@ -135,6 +133,24 @@ class FilesController {
     }
     file.isPublic = 'false';
     return res.status(200).json(file);
+  }
+
+  static async getFile(req, res) {
+    const { id } = req.params
+    const file = await dbClient.findFilebyId(id)
+    if (!file) {
+      return res.status(404).json({ error: 'Not found' })
+    }
+    const user = await authUser(req, res)
+    if (file.isPublic === false && !user || user._id !== file.userId) {
+      return res.status(404).json({ error: 'Not found' })
+    }
+    if (file.type === 'folder') {
+      return res.status(400).json({ error: "A folder doesn't have content" })
+    }
+    if (!file['localPath']) {
+      return res.status(404).json({ error: 'Not found' })
+    }
   }
 }
 
