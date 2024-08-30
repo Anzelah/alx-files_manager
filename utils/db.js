@@ -119,9 +119,10 @@ class DBClient {
   }
 
   async updateFile(id, updateFields) {
+    const file = await this.findFilebyId(id)
     if (file) {
       await this.filesCol.updateOne(
-        { _id: id },
+        { _id: file._id },
         { $set: updateFields },
       );
     return file
