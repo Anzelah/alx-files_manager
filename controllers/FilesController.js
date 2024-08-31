@@ -10,13 +10,7 @@ const mime = require('mime-types');
 
 class FilesController {
   static async postUpload(req, res) {
-    const token = req.headers['x-token'];
-    if (!token) {
-      return res.status(400).json({ error: 'Missing token' });
-    }
-    const key = `auth_${token}`;
-    const userId = await redisClient.get(key);
-    const user = await dbClient.findUserbyId(userId);
+    const user = await authUser(req, res)
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -36,7 +30,7 @@ class FilesController {
     if (!type || !typesArr.includes(type)) {
       return res.status(400).json({ error: 'Missing type' });
     }
-    if (!data && type !== 'folder') {
+    if (!data && (type !== 'folder')) {
       return res.status(400).json({ error: 'Missing data' });
     }
 
@@ -147,7 +141,6 @@ class FilesController {
     }
 
     const user = await authUser(req, res);
-
     if (file.isPublic === false && (!user || (user._id.toString() !== file.userId.toString()))) {
       return res.status(404).json({ error: 'Not found' });
     }
