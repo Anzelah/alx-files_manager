@@ -8,13 +8,15 @@ const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
 
+const fileQueue = new Bull('image transcoding')
+
 class FilesController {
   static async postUpload(req, res) {
     const user = await authUser(req, res)
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-
+   
     let data;
     const {
       name, type, parentId = 0, isPublic = false,
@@ -43,22 +45,36 @@ class FilesController {
         return res.status(400).json({ error: 'Parent is not a folder' });
       }
     }
-
+    
+    let myFile;
     let localPath;
+    myFile = await dbClient.findFilebyId(user._id)
     if (type !== 'folder') {
       const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
       if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath);
       }
+
       const filename = uuid();
       localPath = path.join(folderPath, filename);
       const content = Buffer.from(data, 'base64').toString('utf8');
+
       try {
-        fs.writeFileSync(localPath, content);
-      } catch (err) {
-        console.error('Error storing the file:', err.message);
-      }
-    }
+	if (type === 'image') {
+          fs.writeFileSync(localPath, content);
+          const job = await fileQueue.add({
+	    fileId: myFile._id,
+	    userId: myFile.userId
+	  })
+	} else {
+	  fs.writeFileSync(localPath, content);
+	}
+
+       } catch (err) {
+         console.error('Error storing the file:', err.message);
+       }
+     }
+   
 
     const newFile = await dbClient.createFile(name, type, parentId, isPublic, data, userId, localPath);
     return res.status(201).json({
@@ -157,4 +173,5 @@ class FilesController {
   }
 }
 
+module.exports = fileQueue
 export default FilesController;
