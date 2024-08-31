@@ -19,12 +19,17 @@ fileQueue.process( async(job, done) => {
     throw new Error('File not found')
   }
   
-  const sizes = [ 500, 250, 100 ]
-  let filePath = file.localPath
+  try {
+    const sizes = [ 500, 250, 100 ]
+    let filePath = file.localPath
 
-  for (const i of sizes) {
-    const options = { i }
-    const thumbnail = await imageThumbnail(filePath, options)
-  }
-  
+    for (const i of sizes) {
+      const options = { i }
+      const thumbnail = await imageThumbnail(filePath, options)
+      const thumbPath = path.join(filePath, `_${i}`)
+      fs.writeFileSync(thumbPath, thumbnail);
+    } catch(err) {
+      console.error('Error storing the thumbnial', err.message)
+    }
+  done()
 })

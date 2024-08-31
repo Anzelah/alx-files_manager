@@ -79,9 +79,9 @@ class DBClient {
     }
   }
 
-  async findSpecificFile(id, user) {
+  async findSpecificFile(id, userId) {
     try {
-      const file = await this.filesCol.findOne({ _id: new ObjectId(id), userId: new ObjectId(user._id) });
+      const file = await this.filesCol.findOne({ _id: new ObjectId(id), userId: new ObjectId(userId) });
       return file;
     } catch (err) {
       console.error('Error retrieving file by id and user:', err.message);

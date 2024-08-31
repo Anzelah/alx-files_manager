@@ -93,7 +93,7 @@ class FilesController {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const { id } = req.params;
-    const file = await dbClient.findSpecificFile(id, user);
+    const file = await dbClient.findSpecificFile(id, user._id);
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
     }
@@ -123,7 +123,7 @@ class FilesController {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const { id } = req.params;
-    const file = await dbClient.findSpecificFile(id, user);
+    const file = await dbClient.findSpecificFile(id, user._id);
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
     }
@@ -139,7 +139,7 @@ class FilesController {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const { id } = req.params;
-    const file = await dbClient.findSpecificFile(id, user);
+    const file = await dbClient.findSpecificFile(id, user._id);
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
     }
@@ -151,6 +151,7 @@ class FilesController {
 
   static async getFile(req, res) {
     const { id } = req.params;
+    const { size } = req.query
     const file = await dbClient.findFilebyId(id);
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
@@ -166,9 +167,22 @@ class FilesController {
     if (!file.localPath) {
       return res.status(404).json({ error: 'Not found' });
     }
+    
+    let filePath = file.localPath
+    const acceptedSizes = [ 500, 250, 100 ]
+    if (size) {
+      if (!size.includes(acceptedSizes){
+        return res.status(400).json ({ error: 'Invalid size' })
+      }
+      const thumbnailFile = `${filePath}_${size}`
+      if (!fs.existsSync(thumbnailFile) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+      filePath = thumbnailFile
+    }
 
     const mimeType = mime.contentType(file.name);
-    const content = fs.readFileSync(file.localPath, mime.charset(mimeType));
+    const content = fs.readFileSync(filePath, mime.charset(mimeType));
     return res.set('Content-Type', mimeType).send(content);
   }
 }
