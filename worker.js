@@ -1,7 +1,8 @@
 import dbClient from './utils/db'
-import fileQueue from './controllers/FilesController'
+import { fileQueue } from './controllers/FilesController'
 
-const Queue = require('bull')
+const path = require('path');
+const fs = require('fs')
 const imageThumbnail = require('image-thumbnail');
 
 fileQueue.process( async(job, done) => {
@@ -13,7 +14,7 @@ fileQueue.process( async(job, done) => {
     throw new Error('Missing userId')
   }
 
-  const { userId, userId } = job.data
+  const { userId, fileId } = job.data
   const file = await dbClient.findSpecificFile(fileId, userId)
   if (!file) {
     throw new Error('File not found')
@@ -28,8 +29,9 @@ fileQueue.process( async(job, done) => {
       const thumbnail = await imageThumbnail(filePath, options)
       const thumbPath = path.join(filePath, `_${i}`)
       fs.writeFileSync(thumbPath, thumbnail);
-    } catch(err) {
+    }
+    done()
+  } catch(err) {
       console.error('Error storing the thumbnial', err.message)
     }
-  done()
 })

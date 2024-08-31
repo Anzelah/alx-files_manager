@@ -7,8 +7,9 @@ const { Buffer } = require('buffer');
 const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
+const Bull = require('bull')
 
-const fileQueue = new Bull('image transcoding')
+export const fileQueue = new Bull('image transcoding')
 
 class FilesController {
   static async postUpload(req, res) {
@@ -61,6 +62,9 @@ class FilesController {
 
       try {
 	if (type === 'image') {
+	  if (!myFile) {
+            return res.status(400).json({ error: 'Parent not found' });
+          }
           fs.writeFileSync(localPath, content);
           const job = await fileQueue.add({
 	    fileId: myFile._id,
@@ -171,11 +175,11 @@ class FilesController {
     let filePath = file.localPath
     const acceptedSizes = [ 500, 250, 100 ]
     if (size) {
-      if (!size.includes(acceptedSizes){
+      if (!size.includes(acceptedSizes)){
         return res.status(400).json ({ error: 'Invalid size' })
       }
       const thumbnailFile = `${filePath}_${size}`
-      if (!fs.existsSync(thumbnailFile) {
+      if (!fs.existsSync(thumbnailFile)) {
         return res.status(404).json({ error: 'Not found' });
       }
       filePath = thumbnailFile
@@ -187,5 +191,4 @@ class FilesController {
   }
 }
 
-module.exports = fileQueue
 export default FilesController;
