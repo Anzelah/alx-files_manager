@@ -89,6 +89,16 @@ class DBClient {
     }
   }
 
+  async findFilebyParentId(parentId) {
+    try {
+      const file = await this.filesCol.findOne({ parentId: new ObjectId(parentId) });
+      return file;
+    } catch (err) {
+      console.error('Error retrieving file by parentId:', err.message);
+      return null;
+    }
+  }
+
   async createFile(name, type, parentId, isPublic, data, userId, localPath) {
     try {
       const existingFile = await this.findFilebyId(parentId);
