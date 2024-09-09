@@ -47,10 +47,7 @@ class FilesController {
       }
     }
   
-
-    let myFile;
     let localPath;
-    myFile = await dbClient.findFilebyParentId(parentId)
     if (type !== 'folder') {
       const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
       if (!fs.existsSync(folderPath)) {
@@ -60,26 +57,26 @@ class FilesController {
       localPath = path.join(folderPath, filename);
       const content = Buffer.from(data, 'base64').toString('utf8');
       try {
-        if (type === 'image') {
-          console.log('file is image')
-          if (!myFile) {
-            return res.status(400).json({ error: 'File not found' });
-          }
-          fs.writeFileSync(localPath, content);
-          const job = await fileQueue.add({
-            fileId: myFile._id,
-            userId: myFile.userId
-          })
-        } else {
-          fs.writeFileSync(localPath, content);
-        }
-
-       } catch (err) {
-         console.error('Error storing the file:', err.message);
-       }
-     } 
+	fs.writeFileSync(localPath, content);
+      } catch(err) {
+        console.error('Error storing the file', err.message)
+      }
+    }
 
     const newFile = await dbClient.createFile(name, type, parentId, isPublic, data, user._id, localPath);
+
+    if (type === 'image') {
+      console.log('file is image')
+      if (!newFile) {
+        return res.status(400).json({ error: 'File not found' });
+      }
+      await fileQueue.add({
+        fileId: newFile._id,
+        userId: user._id
+      })
+      console.log(JSON.stringify(newFile))
+    }
+
     return res.status(201).json({
       id: newFile._id,
       userId: newFile.userId,
@@ -161,10 +158,8 @@ class FilesController {
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
     }
-    console.log(`This is the id: ${id}`)
     console.log(JSON.stringify(file))
-    console.log(`This is the localpath: ${file.localPath}`)
-    const user = await authUser(req, res);
+    const user = await dbClient.findUserbyId(file.userId)
     if (file.isPublic === false && (!user || (user._id.toString() !== file.userId.toString()))) {
       return res.status(404).json({ error: 'Not found' });
     }
@@ -174,10 +169,11 @@ class FilesController {
     if (!file.localPath) {
       return res.status(404).json({ error: 'Not found' });
     }
-    console.log(file.localPath) 
+
     let filePath = file.localPath
     const acceptedSizes = [ 500, 250, 100 ]
     if (size) {
+      console.log(`This is the size: ${size}`)
       if (!size.includes(acceptedSizes)){
         return res.status(400).json ({ error: 'Invalid size' })
       }
@@ -190,8 +186,7 @@ class FilesController {
       console.log(`This is the thumbnail ${thumbnailFile}`)
     }
     
-    console.log(`This is the filepath ${filePath}`)
-    console.log('here')
+    console.log('final')
     const mimeType = mime.contentType(file.name);
     const content = fs.readFileSync(filePath);
     return res.set('Content-Type', mimeType).send(content);

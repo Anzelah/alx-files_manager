@@ -61,6 +61,7 @@ class DBClient {
 
   async findUserbyId(id) {
     try {
+      console.log(id)
       const user = await this.usersCol.findOne({ _id: new ObjectId(id) });
       return user;
     } catch (err) {
@@ -69,12 +70,23 @@ class DBClient {
     }
   }
 
-  async findFilebyId(parentId) {
+  async findFilebyId(id) {
     try {
-      const file = await this.filesCol.findOne({ _id: new ObjectId(parentId) });
+      console.log(`Id in db: ${id}`)
+      const file = await this.filesCol.findOne({ _id: new ObjectId(id) });
       return file;
     } catch (err) {
-      console.error('Error retrieving file by parentId:', err.message);
+      console.error('Error retrieving file by Id:', err.message);
+      return null;
+    }
+  }
+
+  async findFilebyUser(userId) {
+    try {
+      const file = await this.filesCol.findOne({ userId: new ObjectId(userId) });
+      return file;
+    } catch (err) {
+      console.error('Error retrieving file by Id:', err.message);
       return null;
     }
   }

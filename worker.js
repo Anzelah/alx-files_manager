@@ -6,25 +6,27 @@ const fs = require('fs')
 const imageThumbnail = require('image-thumbnail');
 
 fileQueue.process( async(job, done) => {
-  console.log(JSON.stringify(job.data))
-  if (!job.data.fileId) {
+  const { userId, fileId } = job.data
+  if (!fileId) {
     throw new Error('Missing fileId')
   }
-  if (!job.data.userId) {
+  if (!userId) {
     throw new Error('Missing userId')
   }
 
-  const { userId, fileId } = job.data
+  console.log(`Retrieved user id: ${userId}`)
+  console.log(`Retrieved file id: ${fileId}`)
   const file = await dbClient.findSpecificFile(fileId, userId)
   if (!file) {
     throw new Error('File not found')
   }
+  console.log('This is the processing of queue')
   console.log(JSON.stringify(file))
-  
+  console.log(typeof(file)) 
   try {
     const sizes = [ 500, 250, 100 ]
     let filePath = file.localPath
-
+    console.log(`This s the filepath: ${filePath}`)
     for (const i of sizes) {
       const options = { i }
       const thumbnail = await imageThumbnail(filePath, options)
